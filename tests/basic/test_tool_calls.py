@@ -722,6 +722,24 @@ def test_plain_answer_is_not_a_tool_call(setup):
     assert response.as_tool_call() is None
 
 
+@pytest.mark.parametrize("answer", ["It is sunny.", '{"answer": "It is sunny."}'])
+def test_tool_call_inspection_does_not_retry_plain_answers(setup, answer):
+    requests = []
+
+    def infer(prompt, **kwargs):
+        requests.append(prompt)
+        return answer
+
+    mc.configure(INFERENCE_FUNC=infer, CHAT_MODE=True, USE_LOGGING=False)
+    response = mc.llm("What is the weather?", retries=2)
+    toolset = ToolSet([ai_func(get_weather)], verbose=False)
+
+    assert not response.is_tool_call()
+    assert response.as_tool_call() is None
+    assert response.as_tool_call(toolset) is None
+    assert len(requests) == 1
+
+
 def test_native_tool_call_comes_before_the_one_in_text(setup):
     response = mc.LLMResponse('{"call": "get_time"}', tool_calls=[WEATHER_CALL])
     assert response.as_tool_call() == ("get_weather", [], {"city": "Kyiv"})

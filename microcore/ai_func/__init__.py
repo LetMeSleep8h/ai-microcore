@@ -12,6 +12,7 @@ from typing import Dict, Any, Optional, Iterable
 import docstring_parser
 from ..utils import dedent, extract_tags
 from .._env import env
+from ..json_parsing import parse_json
 from ..wrappers.llm_response_wrapper import LLMResponse
 from ..ui import yellow, blue
 
@@ -170,10 +171,9 @@ def extract_json_tool_params(
     llm_response: LLMResponse | str,
     raise_errors=False
 ) -> tuple[str, list, dict] | None:
-    if not isinstance(llm_response, LLMResponse):
-        llm_response = LLMResponse(llm_response)
-
-    params = llm_response.parse_json(
+    # Inspect only this answer. LLMResponse.parse_json() may retry inference.
+    params = parse_json(
+        llm_response,
         raise_errors=raise_errors,
         required_fields=[env().config.AI_SYNTAX_FUNCTION_NAME_FIELD],
     )

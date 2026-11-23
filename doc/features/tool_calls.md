@@ -109,6 +109,9 @@ or `await server.exec(call)` for each `call` in `response.tool_calls`.
 A response that only calls tools has no text, so it is an empty string.
 Text and tool calls may also come together.
 
+`is_tool_call()` and `as_tool_call()` inspect the existing response without sending
+another model request, even when `llm()` was called with `retries`.
+
 ### Streaming with callbacks
 
 Callbacks receive text only. Tool calls are assembled from the stream
